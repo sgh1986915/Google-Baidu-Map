@@ -1,0 +1,74 @@
+/*http://www.fossil.com/wcsstore/CommonFossil/css/shell/*/
+
+/*@font-face {
+    font-family:"ScoutCondThin";
+    src:url(fonts/scout/ScoutCondensedThin/51ec05df-40e8-45fd-8b4d-ec44f86c6ef6-2.eot);
+    src:local(☺),url(fonts/scout/ScoutCondensedThin/51ec05df-40e8-45fd-8b4d-ec44f86c6ef6-4.svg#web) format("svg"),url(fonts/scout/ScoutCondensedThin/51ec05df-40e8-45fd-8b4d-ec44f86c6ef6-3.woff) format("woff"),url(fonts/scout/ScoutCondensedThin/51ec05df-40e8-45fd-8b4d-ec44f86c6ef6-1.ttf) format("truetype");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:"ScoutExtraLight";
+    src:url(fonts/scout/ScoutExtraLight/38d86c7a-9e90-469f-b6ab-5cabef73acdc-2.eot);
+    src:local(☺),url(fonts/scout/ScoutExtraLight/38d86c7a-9e90-469f-b6ab-5cabef73acdc-4.svg#web) format("svg"),url(fonts/scout/ScoutExtraLight/38d86c7a-9e90-469f-b6ab-5cabef73acdc-3.woff) format("woff"),url(fonts/scout/ScoutExtraLight/38d86c7a-9e90-469f-b6ab-5cabef73acdc-1.ttf) format("truetype");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:"ScoutLight";
+    src:url(fonts/scout/ScoutLight/be434b72-7304-4849-8b11-662215b963ce-2.eot);
+    src:local(☺),url(fonts/scout/ScoutLight/be434b72-7304-4849-8b11-662215b963ce-4.svg#web) format("svg"),url(fonts/scout/ScoutLight/be434b72-7304-4849-8b11-662215b963ce-3.woff) format("woff"),url(fonts/scout/ScoutLight/be434b72-7304-4849-8b11-662215b963ce-1.ttf) format("truetype");
+    font-style:normal;
+    font-weight:400
+}*/
+
+@font-face {
+    font-family:"ScoutReg";
+    src:url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-2.eot);
+    src:local(☺),url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-3.woff) format("woff"),url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-1.ttf) format("truetype");
+    /*url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-4.svg#web) format("svg"),*/
+    font-style:normal;
+    font-weight:400
+}
+
+/*@font-face {
+    font-family:"ScoutThin";
+    src:url(fonts/scout/ScoutThin/d61b9cca-75d2-472c-b9e8-c90ef8a5d155-2.eot?#iefix);
+    src:local(☺),url(fonts/scout/ScoutThin/d61b9cca-75d2-472c-b9e8-c90ef8a5d155-2.eot?#iefix) format("embedded-opentype"),url(fonts/scout/ScoutThin/d61b9cca-75d2-472c-b9e8-c90ef8a5d155-4.svg#web) format("svg"),url(fonts/scout/ScoutThin/d61b9cca-75d2-472c-b9e8-c90ef8a5d155-3.woff) format("woff"),url(fonts/scout/ScoutThin/d61b9cca-75d2-472c-b9e8-c90ef8a5d155-1.ttf) format("truetype");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:"ScoutCond";
+    src:url(fonts/scout/ScoutCondensedRegular/32bdbbe6-e69d-4419-88ca-f5e3e50fcb90-2.eot);
+    src:local(☺),url(fonts/scout/ScoutCondensedRegular/32bdbbe6-e69d-4419-88ca-f5e3e50fcb90-3.woff) format("woff"),url(fonts/scout/ScoutCondensedRegular/32bdbbe6-e69d-4419-88ca-f5e3e50fcb90-1.ttf) format("truetype"),url(fonts/scout/ScoutCondensedRegular/S32bdbbe6-e69d-4419-88ca-f5e3e50fcb90-4.svg#web) format("svg");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:"ScoutCondExtraLight";
+    src:url(fonts/scout/scoutCond-ExtraLight/d7978e8e-3666-408c-ace5-fc7709dd706f-2.eot);
+    src:local(☺),url(fonts/scout/scoutCond-ExtraLight/d7978e8e-3666-408c-ace5-fc7709dd706f-3.woff) format("woff"),url(fonts/scout/scoutCond-ExtraLight/d7978e8e-3666-408c-ace5-fc7709dd706f-1.ttf) format("truetype"),url(fonts/scout/scoutCond-ExtraLight/d7978e8e-3666-408c-ace5-fc7709dd706f-4.svg#web) format("svg");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:"ScoutCondLight";
+    src:url(fonts/scout/scoutCond-Light/362564bc-621d-4541-9513-7eb664b59cf2-2.eot);
+    src:local(☺),url(fonts/scout/scoutCond-Light/362564bc-621d-4541-9513-7eb664b59cf2-3.woff) format("woff"),url(fonts/scout/scoutCond-Light/362564bc-621d-4541-9513-7eb664b59cf2-1.ttf) format("truetype"),url(fonts/scout/scoutCond-Light/362564bc-621d-4541-9513-7eb664b59cf2-4.svg#web) format("svg");
+    font-style:normal;
+    font-weight:400
+}
+
+@font-face {
+    font-family:'MrEavesSanRBold';
+    src:url(fonts/mreavessanb-071211002EmigreWebOnly.eot);
+    src:local(☺),url(fonts/mreavessanb-071211002EmigreWebOnly.woff) format("woff");
+    font-weight:400;
+    font-style:normal
+}*/

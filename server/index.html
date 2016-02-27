@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<script type="text/javascript" src="js/redirection_mobile.js"></script>
+<script>
+  SA.redirection_mobile ({
+     tablet_redirection : "false",
+     mobile_url : "mobile.where2getit.com/fossil/index.html"
+     //tablet_url : "mobile.where2getit.com/fossil/index.html",
+  });
+</script>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+
+	<title>Fossil Locator</title>
+
+	<meta name="keywords" content="fossil" />
+	<meta name="description" content="fossil Store and Dealer locator" />
+
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<meta name='format-detection' content='telephone=no' />
+	<noscript>
+		<meta http-equiv="refresh" content="1; URL=nojs.html" />
+	</noscript>
+
+	<link type="text/css" href="css/proto.css" rel="stylesheet" media="all"/>
+	<link type="text/css" href="css/bubble.css" rel="stylesheet" media="all"/>
+	<link type="text/css" href="css/fonts.css" rel="stylesheet" media="all"/>
+	<link type="text/css" href="css/style.css" rel="stylesheet" media="all"/>
+	<link type="text/css" href="css/lightwindow.css" rel="stylesheet" media="all"/>
+
+	<script type="text/javascript" src="js/prototype.js"></script>
+	<script type="text/javascript" src="js/W2GI_core.js"></script>
+	<script type="text/javascript" src="js/W2GI_maps.js"></script>
+	<script type="text/javascript" src="js/W2GI_slippymap.js"></script>
+	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?v=3&sensor=false&client=gme-where2getit&language=en&libraries=places"></script>
+	<script type="text/javascript">
+		function loadSlippyMap() {
+			var options = {
+				dynamicSearch: true,
+				dynamicSearchForm : true,
+				noZoomOnPan: true,
+				geoip: true,
+				theme: null,
+				routeStyle: {	strokeWidth: 8,
+								strokeOpacity: .5,
+								strokeColor: '#0000FF' },
+				controls: [	new OpenLayers.Control.PanZoomBar(),
+						new OpenLayers.Control.Navigation() ]
+			};
+			OpenLayers.IMAGE_RELOAD_ATTEMPTS = 2;
+			OpenLayers.ImgPath='/w2gi/images/zoombar/';
+			SlippyMap.load('map', 'panel', options);
+
+			/*
+			 *  Event is fired when the user clicks on a marker on the map
+			 * or on a location from the side panel.
+			 */
+			document.on('w2gi:track', function(event,element) {
+				if (event.memo && event.memo.action && event.memo.value) {
+					if (event.memo.action == 'clickondealer-map' || event.memo.action == 'clickondealer-panel') {
+						populateFromField(event.memo.value)
+					}
+				}
+			})
+
+		}
+
+		/*
+		 * Populates the input using the values in the main address field.
+		 */
+		function populateFromFieldOLD(uid) {
+			var poi, bubble, inputFrom
+			poi	= ace.table.data.panel.records.filter(function(el) { return el.UID == uid })
+			if (poi && poi.length > 0) {
+				poi = poi.first().POINUM
+				bubble = $('directions_form_' + poi)
+				if (bubble) {
+					inputFrom = bubble.select('input').filter(function(e) {return e.name == 'addressline'}).first()
+					if (inputFrom) {
+						inputFrom.value = $('inputaddress').value
+					}
+				}
+			}
+		}
+
+
+		function populateFromField(uid) {
+			var poi, bubble, inputFrom
+			poi	= ace.table.data.panel.records.filter(function(el) { return el.UID == uid })
+			if (poi && poi.length > 0) {
+				poi = poi.first().POINUM
+
+				//bubble = $('directions_form_' + poi)
+				bubble = $$('.mainbubblecontent').last()
+				if (bubble) {
+					inputFrom = bubble.select('input[type=text]').filter(function(e) {return e.recnum != "#{POINUM}"}).filter(function(e) {return e.name == 'addressline' }).first()
+					if (inputFrom) {
+						inputFrom.value = ''
+						inputFrom.value = $('inputaddress').value
+						return
+					}
+				}
+			}
+		}
+
+		function clear_search_directions_box(i) {
+			if (i.value == 'Enter street address, city, state or postal code') {
+				i.value = '';
+			}
+			if (i.value == 'Start address') {
+				i.value = '';
+			}
+			if (i.value == 'End address') {
+				i.value = '';
+			}
+		}
+
+		function clear_inputbox(i){i.value = '';}
+
+		function printprepare() {
+                            clear_search_directions_box($('inputaddress'));
+                            clear_search_directions_box($('startaddress'));
+                            clear_search_directions_box($('endaddress'));
+                    }
+
+		function search_again() {
+			var searchCountry = $('search_country').value;
+			var searchAddress = $('inputaddress').value;
+			var searchRadius = $('searchradius').value;
+			var searchRadiusuom = $('radiusuom').value;
+			window.location = window.location.href + "?form=locator_search&addressline=" + searchCountry + "&addressline=" + searchAddress +"&searchradius=" + searchRadius + "&radiusuom=" + searchRadiusuom;
+
+		}
+
+		function loadSM(){
+			loadSlippyMap();
+		}
+
+		function setDistanceUOM(uom) {
+				$('bubble_distanceuom').innerHTML = "<option value=' + uom + '></option>";
+			}
+
+		function loadCountry() {
+			ace.collection.appendOptions('search_country', 'Account::Country', {}, 'account_country', 'name', 'description', loadSM);
+			ace.collection.appendOptions('bubble_country', 'Account::Country', {}, 'account_country', 'name', 'description');
+			ace.collection.appendOptions('orig_country', 'Account::Country', {}, 'account_country', 'name', 'description');
+			ace.collection.appendOptions('dest_country', 'Account::Country', {}, 'account_country', 'name', 'description');
+			}
+
+/*		function radiusSelect(){
+			if ($('searchradius').value !== '25' {
+				$('searchradius.value') = '25';
+			}
+		});*/
+
+	</script>
+	<style>
+
+@font-face {
+    font-family:"ScoutReg";
+    src:url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-2.eot);
+    src:url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-4.svg#web) format("svg"),url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-3.woff) format("woff"),url(http://hosted.where2getit.com/fossil/fonts/ScoutRegular/bc4791d9-d4e7-4d04-adfd-04fd22763838-1.ttf) format("truetype");
+    font-style:normal;
+    font-weight:400
+}
+
+	.uom_km_mile, .uom_km_meters {
+		display:none;
+	}
+
+	.uom_other_km {
+		display:none;
+	}
+
+	.maneuver {
+		padding: 5px;
+	}
+	.maneuver div {
+		padding: 3px 0;
+		font-size: 14px !important;
+		padding: 0 6px;
+		display: inline;
+	}
+
+	table#collection_maneuvers tbody tr {
+		font-size: 14px;
+	}
+
+div#lightwindow_container{top:-360px !important;}
+</style>
+
+</head>
+
+<body onload="loadCountry();" onunload="SlippyMap.unload();">
+
+	<!-- XML data island start  -->
+	<xml>
+		<root>
+			<ajaxurl>ajax?</ajaxurl>
+			<appkey>269B11D6-E81F-11E3-A0C3-A70A0D516365</appkey>
+			<inputforms>
+				<inputform>
+					<formdata id="reversegeocoder">
+						<geolocs>
+							<geoloc>
+								<latitude></latitude>
+								<longitude></longitude>
+								<country></country>
+							</geoloc>
+						</geolocs>
+					</formdata>
+				</inputform>
+			</inputforms>
+			<sources>
+				<layer>
+					<name>Google Normal</name>
+					<options>{'projection': 'EPSG:900913', 'type': google.maps.MapTypeId.ROADMAP, 'maxZoomLevel':18 }</options>
+				</layer>
+			</sources>
+		</root>
+	</xml>
+	<!-- XML data island end -->
+
+	<div id="templates" style="display: none;">
+
+		<!-- icon template start  -->
+		<div id="default" class="icon" bubbleid="bubble" width="28" height="33" offsetx="-14" offsety="-33">
+			<img class="alpha" src="http://hosted.where2getit.com/fossil/images/FossilStore.png"/>
+			<div action="open_bubble" recnum="#{POINUM}">#{POINUM}</div>
+		</div>
+
+		<div id="FossilStore" class="icon" bubbleid="bubble" width="28" height="33" offsetx="-14" offsety="-33">
+			<img class="alpha" src="http://hosted.where2getit.com/fossil/images/FossilStore.png"/>
+			<div action="open_bubble" recnum="#{POINUM}">#{POINUM}</div>
+		</div>
+
+		<div id="FossilOutlet" class="icon" bubbleid="bubble" width="28" height="33" offsetx="-14" offsety="-33">
+			<img class="alpha" src="http://hosted.where2getit.com/fossil/images/FossilOutlet.png"/>
+			<div action="open_bubble" recnum="#{POINUM}">#{POINUM}</div>
+		</div>
+
+		<div id="AuthorizedReseller" class="icon" bubbleid="bubble" width="28" height="33" offsetx="-14" offsety="-33">
+			<img class="alpha" src="http://hosted.where2getit.com/fossil/images/AuthorizedReseller.png"/>
+			<div action="open_bubble" recnum="#{POINUM}">#{POINUM}</div>
+		</div>
+
+		<div id="center_marker" class="icon" bubbleid="bubble" width="30" height="28"  offsetx="-15" offsety="-28">
+			<img class="alpha" src="/w2gi/images/icons/smooth-red-star.png"/>
+		</div>
+		<!-- icon template end  -->
+
+
+		<!-- bubble template start  -->
+		<div id="bubble" offsetx="-47" offsety="-315" style="margin: 25px; width: 275px; height: 275px;">
+
+			<!-- bubble tabs -->
+			<img class="alpha bubble_tab activetab tab1" src="/w2gi/images/spacer.png" />
+			<div class="tab_label tab1label">Address</div>
+
+			<img class="alpha bubble_tab nonactivetab tab2" src="/w2gi/images/spacer.png" />
+			<div class="tab_label tab2label">Hours</div>
+
+			<!-- bubble images -->
+			<img class="alpha bubble_close" src="/w2gi/images/spacer.png" />
+			<img class="alpha mainbubble" src="images/bubble_back.png" />
+
+			<!-- middle -->
+            <div class="mainbubblecontent" >
+				<div class="mainbubbletabcontent" >
+
+					<!-- tab1 -->
+					<div class="tab_content activetabcontent">
+						<div class="mainbubblelocationname">#{NAME}</div>
+						<div class="bubble_address_wrap">
+							<div>#{ADDRESS1}</div>
+							<div>#{ADD2}</div>
+							<div>#{CITY}, #{STATE}#{PROVINCE} #{POSTALCODE}</div>
+							<div>#{PHONE}</div>
+						</div>
+						<div class="bubble_distance">Distance: #{_DISTANCE} <span class="uom_km_#{_DISTANCEUOM}">#{_DISTANCEUOM}</span><span class="uom_other_#{_DISTANCEUOM}">#{_DISTANCEUOM}s</span> away</div>
+						<div class="bubble_links">
+							<a class="lightwindow" params="lightwindow_height=515,lightwindow_width=366,lightwindow_loading_animation=false" url="/lite?appkey=269B11D6-E81F-11E3-A0C3-A70A0D516365&action=emaillocatorstart&template=emaillocatorstart&uid=#{UID}" title="Send to Email" href="" >
+							Send to Email</a>
+							<br />
+							<a class="lightwindow" params="lightwindow_height=315,lightwindow_width=366,lightwindow_loading_animation=false" url="/lite?appkey=269B11D6-E81F-11E3-A0C3-A70A0D516365&action=smslocatorstart&template=smslocatorstart&uid=#{UID}" title="Send to Mobile" href="" >
+							Send to Mobile</a>
+						</div>
+						<div class="bubbleform">
+							<form autocomplete="off">
+								<span class="dir">Get directions from:</span>
+								<a href="javascript:void(0);" style="display: none">To</a>
+								<input recnum="#{POINUM}" type="text" name="addressline" class="bubble_addressline" value="" onclick="this.value='';"/>
+								<select id="bubble_country" name="country" style="display: none;">
+									<option value="">Select Country</option>
+		        				</select>
+                                <select name="distanceuom" style="display: none;" id="bubble_distanceuom">
+									 <option value="km">KM</option>
+								</select>
+								<input recnum="#{POINUM}" type="submit" value="Go" class="bubble_button" />
+								<!--<div class="address_helper">(111 Main St, Chicago, IL 60613)</div>-->
+							</form>
+						</div>
+					</div>
+
+					<!-- tab2 -->
+					<div class="tab_content nonactivetabcontent" >
+						show hours here ...
+					</div>
+
+				</div><!-- /.mainbubbletabcontent -->
+			</div><!-- /.mainbubblecontent -->
+
+		</div>
+		<!-- bubble template end -->
+
+
+		<!-- POI table template start -->
+		<table id="collection_poi" odd_row_class="odd" even_row_class="even" active_row_class="active" slice_size="5">
+			<thead>
+				<tr class="poi">
+					<th colspan="1">
+						<div class="result_count">#{SLICE_START}-#{SLICE_END} of #{COUNT} stores</div>
+						<div class="next"><a class="next_results" action="next_results" href="javascript:void(0);">Next Page &gt;</a></div>
+						<div class="prev"><a class="prev_results" action="prev_results" href="javascript:void(0);">&lt; Previous Page</a></div>
+
+						<br class="clear" />
+					</th>
+				</tr>
+				<tr class="panel_headers">
+					<td>
+						<div class="icon_header">
+
+						</div>
+						<div class="address_header">
+							Location
+						</div>
+						<div class="products_header">
+							Products
+						</div>
+						<div class="hours_header">
+							Hours
+						</div>
+						<div class="distance_header">
+							Distance
+						</div>
+						<div class="email_sms_header">
+							Connect
+						</div>
+					</td>
+				</tr>
+			</thead>
+			<tfoot>
+				<tr>
+					<td colspan="1">
+						<!-- start navigation
+						<div class="prev"><a class="prev_results" action="prev_results" href="javascript:void(0);">Previous</a></div>
+						<div class="next"><a class="next_results" action="next_results" href="javascript:void(0);">Next</a></div>
+						end navigation -->
+					</td>
+				</tr>
+			</tfoot>
+			<tbody>
+
+				<tr recnum="#{POINUM}">
+					<td valign="top">
+						<!--<div templateid="#{ICON}">
+
+						</div>-->
+						<div class="panel_icon_wrapper">
+							<div class="hide#{FOSSIL_STORE}">
+								<img src="images/FossilStore.png" alt="Fossil Store Icon" />
+								<div class="panel_poi">#{POINUM}</div>
+							</div>
+							<div class="hide#{FOSSIL_OUTLET}">
+								<img src="images/FossilOutlet.png" alt="Fossil Store Icon" />
+								<div class="panel_poi">#{POINUM}</div>
+
+							</div>
+							<div class="hide#{AUTHORIZED_RETAILER}">
+								<img src="images/AuthorizedReseller.png" alt="Fossil Store Icon" />
+								<div class="panel_poi">#{POINUM}</div>
+							</div>
+						</div>
+						<div class="address_wrapper">
+							<div class="store_name"><a action="open_bubble" class="store_name" recnum="#{POINUM}" href="javascript:void(0);">#{NAME}</a></div>
+							<div class="hide#{MALL}">#{MALL}</div>
+							<div>#{ADDRESS1}</div>
+							<div class="hide#{SUITE}">#{SUITE}</div>
+							<div>#{ADD2}</div>
+							<div>#{CITY}, #{STATE}#{PROVINCE} #{POSTALCODE}</div>
+							<div><p><b>#{PHONE}</b></p></div>
+						</div>
+						<!-- placeholder, need relevant cols in database -->
+						<div class="products_wrapper">
+							<div class="hide#{WATCHES}">
+								<img src="images/watches.png" alt="Bags Logo" />
+							</div>
+							<div class="hide#{HANDBAGS}">
+								<img src="images/bags.png" alt="Bags Logo" />
+							</div>
+							<br class="clear" />
+							<!--<img src="images/watches.png" alt="Bags Logo" />
+							<img src="images/bags.png" alt="Bags Logo" />-->
+						</div>
+						<!-- placeholder, need relevant cols in database
+						<div class="hours_wrapper">
+							<div>Mon - Fri / 10am - 9pm</div>
+							<div>Mon - Fri / 10am - 9pm</div>
+							<div>Mon - Fri / 12pm - 6pm</div>
+						</div>-->
+							<div class="hours_wrapper">
+								<div class="hide#{MONDAYOPEN}">
+									Mon / #{MONDAYOPEN} - #{MONDAYCLOSE} <br />
+									Tues / #{TUESDAYOPEN} - #{TUESDAYCLOSE} <br />
+									Wed / #{WEDNESDAYOPEN} - #{WEDNESDAYCLOSE} <br />
+									Thurs / #{THURSDAYOPEN} - #{THURSDAYCLOSE} <br />
+									Fri / #{FRIDAYOPEN} - #{FRIDAYCLOSE} <br />
+									Sat / #{SATURDAYOPEN} - #{SATURDAYCLOSE} <br />
+									Sun / #{SUNDAYOPEN} - #{SUNDAYCLOSE}
+								</div>
+							</div>
+
+						<div class="distance_wrapper">
+							#{_DISTANCE} #{_DISTANCEUOM}s
+						</div>
+						<div class="email_sms">
+							<a class="lightwindow" params="lightwindow_height=515,lightwindow_width=366,lightwindow_loading_animation=false" url="/lite?appkey=269B11D6-E81F-11E3-A0C3-A70A0D516365&action=emaillocatorstart&template=emaillocatorstart&uid=#{UID}" title="Send to Email" href="" >
+							Send to Email</a>
+							<br />
+							<a class="lightwindow" params="lightwindow_height=315,lightwindow_width=366,lightwindow_loading_animation=false" url="/lite?appkey=269B11D6-E81F-11E3-A0C3-A70A0D516365&action=smslocatorstart&template=smslocatorstart&uid=#{UID}" title="Send to Mobile" href="" >
+							Send to Mobile</a>
+							<br />
+							<a class="panel_directions" action="open_bubble" recnum="#{POINUM}">Get Directions</a>
+						</div>
+						<br class="clear" />
+						<!-- <a action="more_info" recnum="#{POINUM}" href="javascript:void(0);">More Info</a> -->
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<!-- POI table template end -->
+
+
+		<!-- More Info table template start -->
+		<table id="collection_more_info" odd_row_class="odd" even_row_class="even" active_row_class="active" slice_size="1">
+
+			<tbody>
+				<tr recnum="#{POINUM}">
+					<td width="33px" valign="top">
+						<div templateid="#{ICON}">
+						</div>
+					</td>
+					<td width="310px">
+						<div class="mainbubblelocationname"><a action="open_bubble" class="store_name" recnum="#{POINUM}" href="javascript:void(0);">#{NAME}</a></div>
+						<div>#{ADDRESS1}</div>
+						<div>#{CITY}, #{STATE}#{PROVINCE} #{POSTALCODE}</div><br/>
+						<div>#{PHONE}</div>
+						<div>#{_DISTANCE} #{_DISTANCEUOM}s away</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<a action="show_all" recnum="#{POINUM}" href="javascript:void(0);">Show All Locations</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<!-- more info table template end -->
+
+
+		<!-- Ambiguous address table template start -->
+		<table id="collection_multiple_address" odd_row_class="odd" even_row_class="even" active_row_class="active">
+			<thead>
+				<tr>
+					<th>Did you mean:</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr recnum="#{POINUM}">
+					<td width="250px">
+						<a action="search_address" recnum="#{POINUM}" href="javascript:void(0);">#{ADDRESS1} #{CITY}, #{STATE}#{PROVINCE} #{POSTALCODE}</a><br/>
+						#{COUNTY}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<!-- Ambiguous address table template end -->
+
+
+		<!-- Maneuvers table template start -->
+		<table id="collection_maneuvers" odd_row_class="odd" even_row_class="even" active_row_class="active">
+			<thead>
+				<tr>
+					<th>
+						<div class="t_distance">Total distance: #{TOTAL_DISTANCE} #{DISTANCE_UNIT}</div>
+						<div>Total time: #{TOTAL_TIME} #{TIME_UNIT}</div>
+
+						<!-- <div id="senddirectionsto">
+							Send directions to:
+							<a href="#" class="lightwindow" params='lightwindow_width=366,lightwindow_height=495,lightwindow_loading_animation=false,lightwindow_open_animation=false' url="#{EMAILMAPURL}">Email</a>
+							<span> | </span>
+							<span><a href="#" class="lightwindow" params='lightwindow_width=366, lightwindow_height=495, lightwindow_loading_animation=false, lightwindow_open_animation=false' url="#{MOBILEMAPURL}">Mobile</a>
+							</span>
+						</div>  -->
+						<br class="clear" />
+					</th>
+				</tr>
+
+				<!--
+				 <tr>
+					<th>
+						<a class="reverse_directions" href="javascript:void(0);">Get reverse directions</a>
+					</th>
+				</tr>
+				-->
+
+				<tr>
+					<td>
+						<div class="v-space"></div>
+						From (A):
+						<div class="addressline">
+							<div class="address_line1" ></div>
+							<div>
+								<span class="address_city"></span>
+								<span class="address_state"></span>
+								<span class="address_zip"></span>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</thead>
+
+			<tfoot>
+				<tr>
+					<td>
+						<div class="v-space"></div>
+						To (B):
+						<div class="addressline">
+							<div class="address_line1" ></div>
+							<div>
+								<span class="address_city"></span>
+								<span class="address_state"></span>
+								<span class="address_zip"></span>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</tfoot>
+
+			<tbody>
+				<tr>
+					<td class="maneuver">#{ID}. #{TEXT} #{DISTANCE} #{DISTANCEUOM}</td>
+				</tr>
+			</tbody>
+
+		</table>
+		<!-- Maneuvers table template end -->
+
+
+		<!-- Lightwindow template start -->
+		<div id="lightwindow_cache" params="lightwindow_width=366, lightwindow_height=200, lightwindow_loading_animation=false">
+			<div id="lightwindow_cache_data" style="line-height: inherit; overflow: visible; position: relative; margin:15px auto; width: 90%; background-color: #fff;"></div>
+			<span id="close_text" style="display:none">Close</span>
+			<span id="title_text" style="display:none">Notice</span>
+		</div>
+		<!-- Lightwindow table template end -->
+
+
+	</div><!-- /#templates -->
+
+
+	<div id="outer">
+		<div class="title_wrapper">
+			<div class="globalbuttons title">
+				Find a Store
+			</div>
+
+			<br class="clear" />
+		</div>
+		<div class="inner">
+			<div id="controls">
+				<div id="icon_bar">
+					<a class="links" href="javascript:void(0);" onclick="printprepare();window.open(SlippyMap.locator.iconBar.printURL('printlocator.html'), 'print', 'toolbar=no, resizable=yes, scrollbars=yes, menubar=yes');">
+						<img alt="Print" title="Print" src="/w2gi/images/iconbar/print.gif"/>
+						<span>Print</span>
+					</a>
+					<a class="links" id="page_email" subject="Location Information" href="javascript:void(0);">
+						<img alt="Email" title="Email" src="/w2gi/images/iconbar/email.gif"/>
+						<span>Email</span>
+					</a>
+					<a class="links" id="page_link" href="javascript:void(0);">
+						<img alt="Link to this page" title="Link to this page" src="/w2gi/images/iconbar/link.gif"/>
+						<span>Link to this page</span>
+					</a>
+				</div>
+
+				<div id="form">
+
+					<form id="locator_search" autocomplete="off">
+						<table>
+							<tbody>
+								<tr>
+									<td colspan="3">
+										<div class="search_header">Find a Store Near You
+										<div class="fas_rule"></div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="radius_search">
+											<label for="searchradius">Find Stores Within</label>
+											<div class="dropdown_wrapper">
+												<select id="searchradius" name="searchradius" class="radius" onchange="SlippyMap.locator.proximitySearch.search($('locator_search'));">
+													<option value="">radius</option>
+													<option value="10">10</option>
+													<option value="25" selected>25</option>
+													<option value="50">50</option>
+													<option value="100">100</option>
+												</select>
+
+											</div>
+
+											<div class="units_select">
+												<!--<label for "units">Unit of distance:</label>-->
+												<div class="units_wrapper">
+													<select name="radiusuom" class="units" id="units" onchange="SlippyMap.locator.proximitySearch.search($('locator_search'));">
+														<!--onchange="SlippyMap.locator.proximitySearch.search($('locator_search'));"-->
+														<option value="mile">mi</option>
+		                                                <option value="km">km</option>
+													</select>
+												</div>
+											</div>
+											<br class="clear" />
+										</div>
+										<div class="country_select">
+											<label for="search_country">Country</label>
+											<div class="country_wrapper">
+												<select name="country" id="search_country">
+													<option value="">Select Country</option>
+												</select>
+											</div>
+											<br class="clear" />
+										</div>
+
+										<div class="search_box">
+											<table><tr>
+												<td><label for="inputaddress">of</label></td>
+												<td><input class="addressentry" id="inputaddress" type="text" size="29" name="addressline" value="Enter street address, city, state or postal code" onClick="clear_inputbox(this);" /></td>
+											</tr></table>
+										</div>
+
+
+										<div class="check_row_border clear">
+										</div>
+
+										<div class="check_row">
+											<input type="checkbox" name="Fossil_Store" id="Fossil_Store" value="1" dynamic="true" />
+											<div class="block red"></div>
+											<label for="Fossil_Store">
+												<!--<div class="check_image"></div>-->
+
+												Fossil Retail Store
+											</label>
+											<br class="clear" />
+										</div>
+	                                	<div class="check_row">
+                                		    <input type="checkbox" name="Fossil_Outlet" id="Fossil_Outlet" value="1" dynamic="true" />
+                                		    <div class="block black"></div>
+                                		    <label for="Fossil_Outlet">Fossil Outlet Store</label>
+                                		    <br class="clear" />
+                            			</div>
+	                                	<div class="check_row">
+                                			<input type="checkbox" name="Authorized_Retailer" id="Authorized_Retailer" value="1" dynamic="true" />
+                                			<div class="block grey"></div>
+                                			<label for="Authorized_Retailer">Authorized Retailer</label>
+                                			<br class="clear" />
+	                              		</div>
+	                              		<div class="check_row_bottom"></div>
+	                              		<!-- nothing in the database for these -->
+	                              		<div class="watches_bags">
+		                                	<div class="check_col">
+		                                		<img src="images/watches.png" alt="Watch Icon" />
+		                                		<label for="Watches"  style="margin-top:5px;display:block;">Watches</label>
+	                                			<input type="checkbox" name="watches" id="watches" value="1" dynamic="true" />
+		                              		</div>
+		                                	<div class="check_col bags">
+		                                		<img src="images/bags.png" alt="Watch Icon" />
+												<label for="handbags" style="margin-top:5px;display:block;">Bags</label>
+	                                			<input type="checkbox" name="handbags" id="handbags" value="1" dynamic="true" />
+		                              		</div>
+		                              		<br class="clear" />
+		                              	</div>
+										<br class="clear" />
+										<div class="search_wrapper">
+											<input id="search_button" class="globalbuttons search_button" type="submit" value="Find Store" name="search"/>
+											<br class="clear" />
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<xml>
+							<root>
+								<inputform>
+									<formdata id="locatorsearch">
+										<dataview>store_default</dataview>
+										<limit>250</limit>
+										<geolocs>
+											<geoloc>
+												<addressline></addressline>
+												<longitude></longitude>
+												<latitude></latitude>
+												<country></country>
+											</geoloc>
+										</geolocs>
+										<searchradius>25|50|100|250</searchradius>
+		          						<radiusuom></radiusuom>
+										<order>FOSSIL_STORE::numeric,FOSSIL_OUTLET::numeric,AUTHORIZED_RETAILER::numeric,_DISTANCE</order>
+                                        <where>
+                                        	<or>
+	                                    	    <fossil_store><eq></eq></fossil_store>
+												<fossil_outlet><eq></eq></fossil_outlet>
+												<authorized_retailer><eq></eq></authorized_retailer>
+											</or>
+
+											<watches><eq></eq></watches>
+											<handbags><eq></eq></handbags>
+
+                                        </where>
+									</formdata>
+								</inputform>
+							</root>
+						</xml>
+					</form>
+
+					<form id="driving_directions" autocomplete="off" style="display: none;">
+						<table>
+							<tbody>
+								<tr>
+									<td>
+										<div class="from_to">From:</div>
+										<input class="addressentry" id="startaddress" type="text" size="28" name="addressline" value="Start address" onClick="clear_search_directions_box(this);"/>
+										<div class="o_country_wrapper">
+											<select id="orig_country" name="country">
+												<option value="">Select Country</option>
+											</select>
+										</div>
+										<div class="from_to">To:</div>
+										<div>
+											<input class="addressentry" id="endaddress" type="text" size="28" name="addressline" value="End address" onClick="clear_search_directions_box(this);"/>
+										</div>
+										<div class="d_country_wrapper">
+											<select id="dest_country" name="country">
+												<option value="">Select Country</option>
+											</select>
+										</div>
+										<div>
+											<input class="globalbuttons driving_directions_button" id="driving_directions_button" type="submit" value="Get Directions" name="driving_directions"/>
+										</div>
+										<div class="directions_distance" style="display: none;">
+											<select name="distanceuom">
+												<option value="mile">Miles</option>
+												<option value="km">KM</option>
+											</select>
+										</div>
+										<div>
+										<a class="globalbuttons search_toggle" href="javascript:void(0);" onclick="search_again();" >Search Again</a>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<xml>
+							<root>
+								<inputforms>
+									<inputform>
+										<formdata id="drivingdirections">
+											<dataview>store_default</dataview>
+											<geolocs>
+												<geoloc>
+													<address1></address1>
+													<city></city>
+													<state></state>
+													<province></province>
+													<postalcode></postalcode>
+													<addressline></addressline>
+													<longitude></longitude>
+													<latitude></latitude>
+													<country></country>
+												</geoloc>
+												<geoloc>
+													<address1></address1>
+													<city></city>
+													<state></state>
+													<province></province>
+													<postalcode></postalcode>
+													<addressline></addressline>
+													<longitude></longitude>
+													<latitude></latitude>
+													<country></country>
+												</geoloc>
+											</geolocs>
+											<map>
+												<size>330,225</size>
+												<icons>
+													<start><path>ddstartpin.png</path></start>
+													<end><path>ddendpin.png</path></end>
+												</icons>
+											</map>
+	                                        <route>
+	                                            <distanceuom></distanceuom>
+	                                        </route>
+											<rid></rid>
+										</formdata>
+									</inputform>
+								</inputforms>
+							</root>
+						</xml>
+					</form>
+
+				</div><!-- /#form -->
+
+				<div class="info">
+					<div class="about">
+						<div class="about_image">
+							<img src="images/info.png" alt="About Image" />
+						</div>
+						<div class="about_text">
+							<h2>About Fossil</h2>
+							<p>Since 1984, Fossil strives to create high-quality products that redefine American designs to fit both your life and your style. Celebrating 30 years of vintage heritage, Fossil’s unique collections reflect the best of what we stand for: bags that pair portability with streamlined design, traditional watches created in fresh colors and durable materials, and timeless accessories.</p>
+						</div>
+					</div>
+					<div class="care">
+						<h2>Customer Care</h2>
+						<p>We are committed to answering questions and addressing comments in a timely fashion. Feel free to contact us by email, phone, or mail using the link below.</p>
+						<div class="ccc">
+							<a href="http://www.fossil.com/webapp/wcs/stores/servlet/ContentView?storeId=12052&page=customerCare_howtoOrder&langId=-1&catalogId=25005" target="_parent">Contact Customer Care</a>
+						</div>
+					</div>
+
+				</div>
+
+			</div><!-- /#controls -->
+
+
+			<div id="locator">
+				<div class="map_wrapper">
+					<div id="map"></div>
+				</div>
+				<div id="panel">
+					<div id="intro_text">Begin your search by entering an address, city, state or postal code into the search box.</div>
+				</div>
+			</div>
+			<br class="clear" />
+
+			<div id="footer">
+				<script type="text/javascript">
+					var d = new Date()
+					document.write("<a href='http://www.where2getit.com' target='_new'>Mapping Locator </a> Powered by Where 2 Get It ")
+					document.write("Copyright &copy; ")
+					document.write(d.getFullYear())
+					document.write(", All Rights Reserved.<br/>")
+					document.write("")
+				</script>
+			</div>
+			<div id="navteqfooter">
+				<script type="text/javascript">
+					var d = new Date()
+					document.write(" <img src=/w2gi/images/logo_navteq_large.gif /> ")
+					document.write(" &copy; Copyright ")
+					document.write(d.getFullYear())
+					document.write(" NAVTEQ Corp.  ")
+				</script>
+				<a href="http://www.where2getit.com/terms/terms.html" onClick="window.open(this.href,'_blank','width=988,height=600,scrollbars=yes,location=no,directories=no,status=no,menubar=no,toolbar=no,resizable=yes');return false;">Use Subject to and Conditions</a>
+			</div>
+		</div> <!-- /.inner -->
+	</div> <!-- /#outer -->
+
+</body>
+
+</html>

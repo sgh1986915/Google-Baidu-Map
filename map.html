@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>地图展示</title>
+        <style>
+            #map-baidu,
+            #map-sogou,
+            #map-google { width: 400px; height: 400px; float: left; margin-right: 10px; }
+            /* clearfix */
+            .cf { zoom:1; }
+            .cf:after { content:''; display:block; clear:both; height:0; overflow:hidden; visibility:hidden; }
+        </style>
+        <script src="http://ditu.google.cn/maps/api/js?sensor=false&language=zh-CN&region=CN"></script>
+        <script src="https://www.google.com/jsapi?key=AIzaSyDk0XlWCg3Fj5f1quC9YtI_fSaX7zqymNo"></script>
+        <script src="http://api.map.baidu.com/api?v=1.2" type="text/javascript"></script>
+        <script type="text/javascript" src="http://dev.baidu.com/wiki/static/map/API/examples/script/convertor.js"></script>
+        <script type="text/javascript" src="http://api.go2map.com/maps/js/api_v2.0.js"></script>
+        <script src="http://yui.yahooapis.com/3.5.1/build/yui/yui-min.js"></script>
+    </head>
+    <body onload="load()">
+        <div id="doc">
+            <div class="header"> </div>
+            <div class="body">
+                <form id="mapForm">
+                    <label for="lat">纬度</label> <input type="text" name="lat" id="lat"/>
+                    <label for="lng">经度</label><input type="text" name="lng" id="lng">
+                    <input type="submit" value="确定" id="ok-btn"/>
+                </form>
+                <div class="cf">
+                    <div id="map-google"></div>
+                    <div id="map-baidu"></div>
+                    <div id="map-sogou"></div>
+                </div>
+            </div>
+            <div class="footer"> </div>
+        </div>
+        <script type="text/javascript">
+            YUI().use('node', 'event', function (Y) {
+                var ndLat = Y.one('#lat'),
+                    ndLng = Y.one('#lng'),
+                    ndForm = Y.one('#mapForm'),
+                    location = new google.maps.LatLng(0, 0),
+                    mapOptions = {
+                        zoom: 4,
+                        center: location,
+                        mapTypeId: google.maps.MapTypeId.ROADMAP,
+                        streetViewControl: false,
+                    };
+
+                //google地图
+                var mapGoogle = new google.maps.Map(document.getElementById('map-google'), mapOptions);
+                var markerGoogle = new google.maps.Marker({
+                    map: mapGoogle
+                });
+                //百度地图
+                var mapBaidu =  new BMap.Map('map-baidu');
+                mapBaidu.addControl(new BMap.NavigationControl());
+                mapBaidu.addControl(new BMap.MapTypeControl());
+                mapBaidu.enableScrollWheelZoom();
+                var markerBaidu;
+                //搜狗地图
+                var mapSogou = new sogou.maps.Map(document.getElementById("map-sogou"),{
+                    mapTypeId: sogou.maps.MapTypeId.ROADMAP,
+                    zoom: 8
+                });
+                var markerSogou;
+                //点击事件
+                ndForm && ndForm.on('submit', function(e) {
+                    e.halt();
+                    var lat = new Number(ndLat.get('value')).toFixed(6),
+                        lng = new Number(ndLng.get('value')).toFixed(6);
+                    //google地图
+                    location = new google.maps.LatLng(lat, lng);
+                    markerGoogle.setPosition(location);
+                    mapGoogle.setCenter(location);
+                    //百度地图
+                    var baiduPoint = new BMap.Point(lng, lat);
+                    BMap.Convertor.translate(baiduPoint, 2 , function(point) {
+                        markerBaidu = markerBaidu || new BMap.Marker(); // 创建标注
+                        markerBaidu.setPosition(point);
+                        mapBaidu.addOverlay(markerBaidu);
+                        mapBaidu.centerAndZoom(point, 15);
+                    });
+                    //搜狗地图
+                    var latLngSogou = new sogou.maps.Point(lng, lat);
+                    sogou.maps.Convertor.translate(latLngSogou, 2, function(a) {
+                        if(a&&a.length>0){
+                            markerSogou = markerSogou || new sogou.maps.Marker({
+                                map:mapSogou,
+                                position:a[0]
+                            });
+                            markerSogou.setPosition(a[0]);
+                            mapSogou.setCenter(a[0]);
+                        }
+                    });
+                });
+            });
+
+        </script>
+    </body>
+</html>
